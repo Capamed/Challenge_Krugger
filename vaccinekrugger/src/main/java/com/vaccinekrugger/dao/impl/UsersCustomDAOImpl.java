@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -46,11 +47,16 @@ public class UsersCustomDAOImpl{
 		iUsersDAO.delete(user);
 	}
 	
+	public Optional<Users> findById(Integer idUser){
+		return iUsersDAO.findById(idUser);
+	}
+	
 	public List <ResponseUsersFiltersDTO> getEmployeesToFilters(String strVaccineState, String strVaccineType, Date strVaccineDateStart,Date strVaccineDateEnd) {
 		
 		StringBuilder strJPQL = new StringBuilder();
 		try {
 			strJPQL.append(" SELECT usr.identification as identification, ");
+			strJPQL.append("usr.idUsers as idUser, ");
 			strJPQL.append("usr.username as username, ");
 			strJPQL.append("usr.password as password, ");
 			strJPQL.append("usr.first_name as firstName, ");
@@ -106,6 +112,7 @@ public class UsersCustomDAOImpl{
 				List<ResponseUsersFiltersDTO> lstResponseUsersFilters = new ArrayList<ResponseUsersFiltersDTO>();
 				for (Tuple objArr : lsResult) {
 					objResponseUsersFilters = new ResponseUsersFiltersDTO();
+					objResponseUsersFilters.setIdUser(objArr.get("idUser", Integer.class).intValue());
 					objResponseUsersFilters.setIdentification(objArr.get("identification", String.class).toString());
 					objResponseUsersFilters.setUsername(objArr.get("username", String.class).toString());
 					objResponseUsersFilters.setPassword(objArr.get("password", String.class).toString());
@@ -225,5 +232,53 @@ public List <ResponseUsersFiltersDTO> getEmployeeByIdentification(String strIden
 		} catch (NoResultException e) {
 			return true;
 		}
+	}
+	
+	public List<Users> getUserByIdentification(String strIdentification) {
+		
+		StringBuilder strJPQL = new StringBuilder();
+		try {
+			strJPQL.append(" SELECT usr.identification as identification, ");
+			strJPQL.append("usr.username as username, ");
+			strJPQL.append("usr.password as password, ");
+			strJPQL.append("usr.first_name as firstName, ");
+			strJPQL.append("usr.last_name as lastName, ");
+			strJPQL.append("usr.mail as mail, ");
+			strJPQL.append("usr.state as state ");
+			strJPQL.append(" FROM USERS usr ");
+			strJPQL.append(" WHERE usro.id_role = :pCodeRole ");
+			strJPQL.append(" AND usr.identification = :pIdentification ");
+			
+
+			@SuppressWarnings("unchecked")
+			TypedQuery<Tuple> query = (TypedQuery<Tuple>) em.createNativeQuery(strJPQL.toString(), Tuple.class);
+			query.setParameter("pCodeRole", 2);
+			query.setParameter("pIdentification", strIdentification);
+			
+			
+			List<Tuple> lsResult = query.getResultList();
+			if (lsResult != null) {
+				Users objUser = null;
+				List<Users> lstUsers = new ArrayList<Users>();
+				for (Tuple objArr : lsResult) {
+					objUser = new Users();
+					objUser.setIdentification(objArr.get("identification", String.class).toString());
+					objUser.setUsername(objArr.get("username", String.class).toString());
+					objUser.setPassword(objArr.get("password", String.class).toString());
+					objUser.setFirstName(objArr.get("firstName", String.class).toString());
+					objUser.setLastName(objArr.get("lastName", String.class).toString());
+					objUser.setMail(objArr.get("mail", String.class).toString());
+					objUser.setState(objArr.get("state", String.class).toString());
+	
+					lstUsers.add(objUser);
+				}
+
+				return lstUsers;
+
+			}
+		} catch (NoResultException e) {
+			return null;
+		}
+		return null;
 	}
 }

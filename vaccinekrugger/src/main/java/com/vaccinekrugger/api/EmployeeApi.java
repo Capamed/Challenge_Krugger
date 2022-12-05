@@ -17,10 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.vaccinekrugger.bo.IUsersBO;
 import com.vaccinekrugger.dto.RequestCreateEmployeeDTO;
+import com.vaccinekrugger.dto.RequestUpdateInformationEmployeeDTO;
 import com.vaccinekrugger.dto.ResponseOk;
 import com.vaccinekrugger.dto.ResponseUsersFiltersDTO;
 import com.vaccinekrugger.exceptions.BOException;
 import com.vaccinekrugger.exceptions.CustomExceptionHandler;
+import com.vaccinekrugger.model.Users;
 import com.vaccinekrugger.utils.MessagesUtil;
 
 @RestController
@@ -48,7 +50,6 @@ public class EmployeeApi {
 		}
 	}
 	
-	
 	//List user by identification
 	@RequestMapping(value = "/{identification}",method = RequestMethod.GET)
 	public ResponseEntity<?> getEmployeeByIdentification(
@@ -57,6 +58,23 @@ public class EmployeeApi {
 	 		)throws BOException, ParseException {
 		try {
 			List<ResponseUsersFiltersDTO> objUsers = iUsersBO.getEmployeeByIdentification(identification);
+			return new ResponseEntity<>(new ResponseOk(
+					MessagesUtil.getMessage("project.response.ok", MessagesUtil.validateSupportedLocale(strLanguage)),
+					objUsers), HttpStatus.OK);
+		} catch (BOException be) {
+			throw new CustomExceptionHandler(be.getTranslatedMessage(strLanguage), be.getData());
+		}
+	}
+	
+	
+	//List user by idUser
+	@RequestMapping(value = "/{idUser}",method = RequestMethod.GET)
+	public ResponseEntity<?> getEmployeeByIdUser(
+			@RequestHeader(value="Accept-Language", required = false) String strLanguage,
+			@PathVariable(name = "identification", required = false) Integer intIdUser
+	 		)throws BOException, ParseException {
+		try {
+			Users objUsers = iUsersBO.getEmployeeByIdUser(intIdUser);
 			return new ResponseEntity<>(new ResponseOk(
 					MessagesUtil.getMessage("project.response.ok", MessagesUtil.validateSupportedLocale(strLanguage)),
 					objUsers), HttpStatus.OK);
@@ -78,6 +96,30 @@ public class EmployeeApi {
 		} catch (BOException be) {
 			throw new CustomExceptionHandler(be.getTranslatedMessage(strLanguage), be.getData());
 		}
+	}
+	
+	//Update state employee to generate credentials 
+	@RequestMapping(value = "/enable", method = RequestMethod.PUT)
+	public ResponseEntity<?> updateStateEmployee(
+			@RequestHeader(value="Accept-Language", required = false) String strLanguage,
+			@RequestParam(name = "state", required = false) String strState,
+			@RequestParam(name = "identification", required = false) String strIdentification)throws BOException, ParseException {
+		iUsersBO.updateStateEmployee(strIdentification,strState);
+		return new ResponseEntity<>(new ResponseOk(
+				MessagesUtil.getMessage("project.response.ok", MessagesUtil.validateSupportedLocale(strLanguage)),
+				null), HttpStatus.OK);
+	}
+	
+	//Update information employee by idUser
+	@RequestMapping(method = RequestMethod.PUT)
+	public ResponseEntity<?> updateInformationEmployee(
+			@RequestHeader(value="Accept-Language", required = false) String strLanguage,
+			@RequestParam(name = "idUser", required = false) Integer  intIdUser,
+			@RequestBody(required = false) RequestUpdateInformationEmployeeDTO objUpdateInformationEmployeeDTO)throws BOException, ParseException {
+		iUsersBO.updateInformationEmployee(intIdUser,objUpdateInformationEmployeeDTO);
+		return new ResponseEntity<>(new ResponseOk(
+				MessagesUtil.getMessage("project.response.ok", MessagesUtil.validateSupportedLocale(strLanguage)),
+				null), HttpStatus.OK);
 	}
 	
 }

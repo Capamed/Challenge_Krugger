@@ -9,20 +9,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class ResponseUsersFiltersDTO {
-	private Integer idUser;
-	private String identification;
-	private String username;
-	private String password;
-	private String firstName;
-	private String lastName;
+public class RequestUpdateInformationEmployeeDTO {
 	private String mail;
-	private String state;
-	private String dateBirth;
 	private String address;
 	private String mobile;
+	private String dateBirth;
 	private String vaccinationState;
 	private String vaccineDate;
 	private Integer numberDose;
-	private String type;
+	private String vaccineType;
 }

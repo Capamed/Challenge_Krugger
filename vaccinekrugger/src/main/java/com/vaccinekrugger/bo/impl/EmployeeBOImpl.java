@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,12 +21,14 @@ import com.vaccinekrugger.bo.IUsersBO;
 import com.vaccinekrugger.dao.impl.UsersCustomDAOImpl;
 import com.vaccinekrugger.dao.impl.VaccineCustomDAOImpl;
 import com.vaccinekrugger.dto.RequestCreateEmployeeDTO;
+import com.vaccinekrugger.dto.RequestUpdateInformationEmployeeDTO;
 import com.vaccinekrugger.dto.ResponseUsersFiltersDTO;
 import com.vaccinekrugger.enums.VaccineState;
 import com.vaccinekrugger.exceptions.BOException;
 import com.vaccinekrugger.exceptions.CustomExceptionHandler;
 import com.vaccinekrugger.model.DataEmployee;
 import com.vaccinekrugger.model.Users;
+import com.vaccinekrugger.model.Vaccine;
 import com.vaccinekrugger.model.VaccineData;
 import com.vaccinekrugger.utils.FunctionsUtil;
 
@@ -91,7 +94,7 @@ public class EmployeeBOImpl implements IUsersBO {
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = { BOException.class, CustomExceptionHandler.class, RestClientException.class})
 	public HashMap<String, Integer> createEmployee(RequestCreateEmployeeDTO objRequestCreateEmployeeDTO) throws BOException, ParseException {
 		
-		//Validations mandatorys
+		//Validations mandatory
 		if(ObjectUtils.isEmpty(objRequestCreateEmployeeDTO) || Objects.isNull(objRequestCreateEmployeeDTO))
 			throw new BOException("project.warn.fieldMandatory", new Object[] { "project.fields.employee" });
 		
@@ -153,7 +156,7 @@ public class EmployeeBOImpl implements IUsersBO {
 		//Validate vaccine datebirth
 		if(!ObjectUtils.isEmpty(objRequestCreateEmployeeDTO.getDateBirth()) || !Objects.isNull(objRequestCreateEmployeeDTO.getDateBirth())) {			
 			if(!FunctionsUtil.validateFormatDate(objRequestCreateEmployeeDTO.getDateBirth()))
-				throw new BOException("project.warn.formatDateStart");
+				throw new BOException("project.warn.formatDateIsInvalid");
 		}
 		
 		//Validate vaccine state
@@ -174,22 +177,85 @@ public class EmployeeBOImpl implements IUsersBO {
 		//Validate vaccine date
 		if(!ObjectUtils.isEmpty(objRequestCreateEmployeeDTO.getVaccineDate()) || !Objects.isNull(objRequestCreateEmployeeDTO.getVaccineDate())) {			
 			if(!FunctionsUtil.validateFormatDate(objRequestCreateEmployeeDTO.getVaccineDate()))
-				throw new BOException("project.warn.formatDateStart");
+				throw new BOException("project.warn.formatDateIsInvalid");
 		}
 		
-		//Get vaccine type by vaccine
 		
-		
-		
-		VaccineData objNewVaccineData = new VaccineData();
-		objNewVaccineData.setVaccineDate(!ObjectUtils.isEmpty(objRequestCreateEmployeeDTO.getVaccineDate())?FunctionsUtil.convertStringToDate(objRequestCreateEmployeeDTO.getVaccineDate()):null);
-		objNewVaccineData.setNumberDose(!ObjectUtils.isEmpty(objRequestCreateEmployeeDTO.getNumberDose())?objRequestCreateEmployeeDTO.getNumberDose():null);
-		objNewVaccineData.setDataEmployee(objNewDataEmployee);
-		objNewVaccineData.setVaccine(null);
+		if(!ObjectUtils.isEmpty(objRequestCreateEmployeeDTO.getVaccinationState()) || !Objects.isNull(objRequestCreateEmployeeDTO.getVaccinationState())) {
+			
+			if(objRequestCreateEmployeeDTO.getVaccinationState().equals(VaccineState.VACCINATED.getName())) {
+				//Get id vaccine by vaccine type
+				Integer intVaccine = objVaccineCustomDAOImpl.getIdVaccineByType(objRequestCreateEmployeeDTO.getVaccineType());
+				if(ObjectUtils.isEmpty(intVaccine) || Objects.isNull(intVaccine)) {
+					throw new BOException("project.warn.NoexistVaccine", new Object[] { objRequestCreateEmployeeDTO.getVaccineType() }); 
+				}
+				Optional<Vaccine> optVaccine = objVaccineCustomDAOImpl.findById(intVaccine);
+				
+				VaccineData objNewVaccineData = new VaccineData();
+				objNewVaccineData.setVaccineDate(!ObjectUtils.isEmpty(objRequestCreateEmployeeDTO.getVaccineDate())?FunctionsUtil.convertStringToDate(objRequestCreateEmployeeDTO.getVaccineDate()):null);
+				objNewVaccineData.setNumberDose(!ObjectUtils.isEmpty(objRequestCreateEmployeeDTO.getNumberDose())?objRequestCreateEmployeeDTO.getNumberDose():null);
+				objNewVaccineData.setDataEmployee(objNewDataEmployee);
+				objNewVaccineData.setVaccine(optVaccine.get());				
+			}
+		}
 		
 		HashMap<String, Integer>hasMapResponse= new HashMap<String, Integer>();
 		hasMapResponse.put("idUser", userCreated.getIdUsers());
 		return hasMapResponse;
+	}
+
+	@Override
+	public void updateStateEmployee(String strIdentification, String strState) {
+		List<Users> lstUsers =  objUsersCustomDAOImpl.getUserByIdentification(strIdentification);
+		 String username = null;
+		 String encodedStringPassword = null;
+		 
+		if(strState.equalsIgnoreCase("S")) {
+			//Generate username and password
+			UUID uuid = UUID.randomUUID();
+		    String uuidAsString = uuid.toString();
+		    String tmpUuidAsString = uuidAsString.split("")[0];
+
+		    
+		    String[] arrFirstName = lstUsers.get(0).getFirstName().split("");
+		    username = arrFirstName[0].toUpperCase() + lstUsers.get(0).getLastName().toUpperCase();
+		    String password = username + tmpUuidAsString;
+		    encodedStringPassword = Base64.getEncoder().encodeToString(password.getBytes());
+		    
+		}else {
+			
+		}
+		
+	  if(lstUsers.size() > 0 && !ObjectUtils.isEmpty(lstUsers)) {
+	    	Users updateUser = new Users();
+	    	updateUser.setIdUsers(lstUsers.get(0).getIdUsers());
+	    	updateUser.setIdentification(strIdentification);
+	    	updateUser.setUsername((strState.equalsIgnoreCase("S"))?username:lstUsers.get(0).getUsername());
+	    	updateUser.setPassword((strState.equalsIgnoreCase("S"))?encodedStringPassword:lstUsers.get(0).getPassword());
+	    	updateUser.setFirstName(lstUsers.get(0).getFirstName());
+	    	updateUser.setLastName(lstUsers.get(0).getLastName());
+	    	updateUser.setMail(lstUsers.get(0).getMail());
+	    	updateUser.setState(strState);
+	    	objUsersCustomDAOImpl.update(updateUser);
+	    }
+	}
+
+	@Override
+	public Users getEmployeeByIdUser(Integer intIdUser) throws BOException, ParseException {
+		Optional<Users> optUsers = objUsersCustomDAOImpl.findById(intIdUser);
+		Users objUser = null;
+		if(optUsers.isPresent()) {
+			objUser = new Users();
+			objUser = optUsers.get();
+		}
+		return objUser;
+	}
+
+	@Override
+	public void updateInformationEmployee(Integer intIdUser,
+			RequestUpdateInformationEmployeeDTO objUpdateInformationEmployeeDTO) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
