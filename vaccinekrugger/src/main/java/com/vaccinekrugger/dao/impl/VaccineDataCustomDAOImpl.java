@@ -1,6 +1,5 @@
 package com.vaccinekrugger.dao.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -9,15 +8,14 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.persistence.Tuple;
-import javax.persistence.TypedQuery;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.vaccinekrugger.dao.IVaccineDataDAO;
-import com.vaccinekrugger.model.Users;
 import com.vaccinekrugger.model.VaccineData;
 
+@Service
 public class VaccineDataCustomDAOImpl{
 
 	@Autowired

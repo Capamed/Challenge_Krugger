@@ -71,7 +71,7 @@ public class EmployeeApi {
 	@RequestMapping(value = "/{idUser}",method = RequestMethod.GET)
 	public ResponseEntity<?> getEmployeeByIdUser(
 			@RequestHeader(value="Accept-Language", required = false) String strLanguage,
-			@PathVariable(name = "identification", required = false) Integer intIdUser
+			@PathVariable(name = "idUser", required = false) Integer intIdUser
 	 		)throws BOException, ParseException {
 		try {
 			Users objUsers = iUsersBO.getEmployeeByIdUser(intIdUser);

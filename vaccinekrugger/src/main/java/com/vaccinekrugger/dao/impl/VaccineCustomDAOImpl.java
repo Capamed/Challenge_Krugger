@@ -10,10 +10,12 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.vaccinekrugger.dao.IVaccineDAO;
 import com.vaccinekrugger.model.Vaccine;
 
+@Service
 public class VaccineCustomDAOImpl{
 
 	@Autowired
