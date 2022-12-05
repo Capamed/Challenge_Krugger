@@ -2,6 +2,9 @@ package com.vaccinekrugger.dao.impl;
 
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaccinekrugger.dao.IUsersRoleDAO;
@@ -11,6 +14,9 @@ public class UsersRoleCustomDAOImpl{
 
 	@Autowired
 	private IUsersRoleDAO iUsersRoleDAO;
+	
+	@PersistenceContext
+	private EntityManager em;
 	
 	public UsersRole insert(UsersRole userRole) {
 		return iUsersRoleDAO.save(userRole);

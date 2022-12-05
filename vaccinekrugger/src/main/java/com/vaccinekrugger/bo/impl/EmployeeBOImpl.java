@@ -300,7 +300,9 @@ public class EmployeeBOImpl implements IUsersBO {
 				}
 				objDataEmployeeCustomDAOImpl.update(updateDataEmployee);
 				
-				Optional<VaccineData> optVaccineData = objVaccineDataCustomDAOImpl.findById(updateDataEmployee.getIdDataEmployee());
+				Integer intIdVaccineData = objVaccineDataCustomDAOImpl.getVaccineDataIdbyIdDataEmployee(optDataEmployee.get().getIdDataEmployee());
+				
+				Optional<VaccineData> optVaccineData = objVaccineDataCustomDAOImpl.findById(intIdVaccineData);
 				VaccineData updateVaccineData = null;
 				if(optVaccineData.isPresent()) {				
 					updateVaccineData = optVaccineData.get();
@@ -331,7 +333,19 @@ public class EmployeeBOImpl implements IUsersBO {
 	@Override
 	public void deleteEmployee(Integer intIdUser) {
 		// TODO Auto-generated method stub
-		
+		Optional<Users> optUsers = objUsersCustomDAOImpl.findById(intIdUser);
+		if(optUsers.isPresent()) {
+			Optional<DataEmployee> optDataEmployee = objDataEmployeeCustomDAOImpl.findById(optUsers.get().getIdUsers());
+			if(optDataEmployee.isPresent()){
+				//Get idDataVaccine by idDataEmployee
+				Integer intIdVaccineData = objVaccineDataCustomDAOImpl.getVaccineDataIdbyIdDataEmployee(optDataEmployee.get().getIdDataEmployee());
+				Optional<VaccineData> optVaccineData = objVaccineDataCustomDAOImpl.findById(intIdVaccineData);
+				if(optVaccineData.isPresent()) {
+					objVaccineDataCustomDAOImpl.delete(optVaccineData.get());
+				}
+				objDataEmployeeCustomDAOImpl.delete(optDataEmployee.get());
+			}
+			objUsersCustomDAOImpl.delete(optUsers.get());
+		}
 	}
-
 }
