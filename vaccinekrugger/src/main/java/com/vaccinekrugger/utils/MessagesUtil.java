@@ -37,7 +37,7 @@ public class MessagesUtil {
 	
 	private static boolean isKey(String strKey) {
 		if (strKey != null && (strKey.contains(".warn.") || strKey.contains(".error.") || strKey.contains(".info.")
-				|| strKey.contains(".campos.") || strKey.contains(".response.") || strKey.contains(".etiquetas.")))
+				|| strKey.contains(".fields.") || strKey.contains(".response.") || strKey.contains(".tags.")))
 			return true;
 		else
 			return false;

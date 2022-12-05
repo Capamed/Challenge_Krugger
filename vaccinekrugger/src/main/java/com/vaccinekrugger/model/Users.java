@@ -30,7 +30,7 @@ public class Users implements Serializable {
     private Integer idUsers;
 	
     @Column(name = "identification", length = 10, unique = true)
-    private Integer identification;
+    private String identification;
     
     @Column(name = "username",length = 30)
     private String username;

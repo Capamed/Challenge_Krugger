@@ -6,37 +6,45 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.vaccinekrugger.exceptions.BOException;
-
 
 public class FunctionsUtil {
 	public static boolean validateFormatDate(String strFecha){
-	    String regx = "(^(((0[1-9]|1[0-9]|2[0-8])[/](0[1-9]|1[012]))|((29|30|31)[/](0[13578]|1[02]))|((29|30)[/](0[4,6,9]|11)))[/](19|[2-9][0-9])\\d\\d$)|(^29[/]02[/](19|[2-9][0-9])(00|04|08|12|16|20|24|28|32|36|40|44|48|52|56|60|64|68|72|76|80|84|88|92|96)$)";
+	    String regx = "^\\d{4}([\\-.])(0?[1-9]|1[1-2])\\1(3[01]|[12][0-9]|0?[1-9])$";
 	    Pattern pattern = Pattern.compile(regx,Pattern.CASE_INSENSITIVE);
 	    Matcher matcher = pattern.matcher(strFecha);
 	    return matcher.find();
 	}
 	
 	public static Date convertStringToDate(String strFecha) throws ParseException{
-		return new SimpleDateFormat("dd/MM/yyyy").parse(strFecha);
+		return new SimpleDateFormat("yyyy-MM-dd").parse(strFecha);
 	}
 
 	public static String convertDateToString(Date date){
-		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		return sdf.format(date);
 	}
 
-	public static String convertirFechaHoraMinString(Date date){
-		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-		return sdf.format(date);
+	public static boolean validateFormatMail(String strMail){
+	    String regx = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
+	    Pattern pattern = Pattern.compile(regx,Pattern.CASE_INSENSITIVE);
+	    Matcher matcher = pattern.matcher(strMail);
+	    return matcher.find();
 	}
 	
-	public static Date convertirFechaHoraMinDate(String strDate) throws BOException{
-		try {
-			return new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(strDate);
-		} catch (ParseException e) {
-			throw new BOException("age.warn.fechaFinInvalida");
-		}
-	}
+	public static boolean validateOnlyLetters(String strWord) {
+        for (int x = 0; x < strWord.length(); x++) {
+            char c = strWord.charAt(x);
+            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == ' ')) {
+                return false;
+            }
+        }
+        return true;
+    }
 	
+	public static boolean validateOnlyTenNumbers(String strWord) {
+		String regex = "^\\d{10}$";
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(strWord);
+		return matcher.matches();
+    }
 }

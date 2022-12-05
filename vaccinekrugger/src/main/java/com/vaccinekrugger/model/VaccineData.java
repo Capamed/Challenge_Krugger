@@ -15,12 +15,16 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 @Entity
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 @Table(name = "VACCINE_DATA")
 public class VaccineData implements Serializable {

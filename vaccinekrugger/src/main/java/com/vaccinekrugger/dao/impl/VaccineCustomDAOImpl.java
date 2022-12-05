@@ -1,6 +1,7 @@
 package com.vaccinekrugger.dao.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,5 +27,9 @@ public class VaccineCustomDAOImpl{
 	
 	public void delete(Vaccine vaccine){
 		iVaccineDAO.delete(vaccine);
+	}
+	
+	public Optional<Vaccine> findById(Integer id) {
+		return iVaccineDAO.findById(id);
 	}
 }

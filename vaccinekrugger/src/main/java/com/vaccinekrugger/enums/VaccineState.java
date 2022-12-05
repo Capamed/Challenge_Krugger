@@ -1,13 +1,13 @@
 package com.vaccinekrugger.enums;
 
-public enum VaccineType {
+public enum VaccineState {
 	
 	VACCINATED("VACCINATED"),
-	NOVACCINAED("NO VACCIATED");
+	NOVACCINATED("NO VACCINATED");
 
 	private String name;
 
-	VaccineType(String name) {
+	VaccineState(String name) {
         this.name = name;
     }
 
