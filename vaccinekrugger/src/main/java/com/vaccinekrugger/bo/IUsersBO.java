@@ -19,7 +19,9 @@ public interface IUsersBO {
 	
 	public void updateStateEmployee(String strIdentification, String strState);
 	
-	public void updateInformationEmployee(Integer intIdUser, RequestUpdateInformationEmployeeDTO objUpdateInformationEmployeeDTO);
+	public void updateInformationEmployee(Integer intIdUser, RequestUpdateInformationEmployeeDTO objUpdateInformationEmployeeDTO) throws ParseException, BOException;
 
 	public  Users getEmployeeByIdUser(Integer intIdUser) throws BOException, ParseException;
+	
+	public void deleteEmployee(Integer intIdUser);	
 }

@@ -122,4 +122,19 @@ public class EmployeeApi {
 				null), HttpStatus.OK);
 	}
 	
+	
+	
+	//Delete employee by idUser
+	@RequestMapping(method = RequestMethod.DELETE)
+	public ResponseEntity<?> deleteEmployee(
+			@RequestHeader(value="Accept-Language", required = false) String strLanguage,
+			@RequestParam(name = "idUser", required = false) Integer  intIdUser,
+			@RequestBody(required = false) RequestUpdateInformationEmployeeDTO objUpdateInformationEmployeeDTO)throws BOException, ParseException {
+		iUsersBO.deleteEmployee(intIdUser);
+		return new ResponseEntity<>(new ResponseOk(
+				MessagesUtil.getMessage("project.response.ok", MessagesUtil.validateSupportedLocale(strLanguage)),
+				null), HttpStatus.OK);
+	}
+	
+	
 }

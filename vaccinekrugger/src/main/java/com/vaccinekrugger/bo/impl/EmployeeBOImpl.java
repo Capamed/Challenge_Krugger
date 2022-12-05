@@ -18,8 +18,10 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestClientException;
 
 import com.vaccinekrugger.bo.IUsersBO;
+import com.vaccinekrugger.dao.impl.DataEmployeeCustomDAOImpl;
 import com.vaccinekrugger.dao.impl.UsersCustomDAOImpl;
 import com.vaccinekrugger.dao.impl.VaccineCustomDAOImpl;
+import com.vaccinekrugger.dao.impl.VaccineDataCustomDAOImpl;
 import com.vaccinekrugger.dto.RequestCreateEmployeeDTO;
 import com.vaccinekrugger.dto.RequestUpdateInformationEmployeeDTO;
 import com.vaccinekrugger.dto.ResponseUsersFiltersDTO;
@@ -40,6 +42,13 @@ public class EmployeeBOImpl implements IUsersBO {
 	
 	@Autowired
 	private VaccineCustomDAOImpl objVaccineCustomDAOImpl;
+	
+	@Autowired
+	private DataEmployeeCustomDAOImpl objDataEmployeeCustomDAOImpl;
+	
+	@Autowired
+	private VaccineDataCustomDAOImpl objVaccineDataCustomDAOImpl;
+	
 	
 	@Override
 	public List<ResponseUsersFiltersDTO> getAllEmployees(String strVaccineState, String strVaccineType, String strCaccineDateStart,String strVaccineDateEnd) throws BOException, ParseException {
@@ -252,8 +261,75 @@ public class EmployeeBOImpl implements IUsersBO {
 	}
 
 	@Override
-	public void updateInformationEmployee(Integer intIdUser,
-			RequestUpdateInformationEmployeeDTO objUpdateInformationEmployeeDTO) {
+	public void updateInformationEmployee(Integer intIdUser, RequestUpdateInformationEmployeeDTO objUpdateInformationEmployeeDTO) throws ParseException, BOException {
+		Optional<Users> optUsers = objUsersCustomDAOImpl.findById(intIdUser);
+		Users objUserUpdate = null;
+		if(optUsers.isPresent()) {
+			objUserUpdate = new Users();
+			objUserUpdate = optUsers.get();
+			if(ObjectUtils.isEmpty(objUpdateInformationEmployeeDTO.getMail())|| !Objects.isNull(objUpdateInformationEmployeeDTO.getMail())) {				
+				objUserUpdate.setMail(objUpdateInformationEmployeeDTO.getMail());
+				objUsersCustomDAOImpl.update(objUserUpdate);
+			}
+			
+			Optional<DataEmployee> optDataEmployee = objDataEmployeeCustomDAOImpl.findById(objUserUpdate.getIdUsers());
+			DataEmployee updateDataEmployee = null;
+			if(optDataEmployee.isPresent()) {				
+				updateDataEmployee = optDataEmployee.get();
+				if(ObjectUtils.isEmpty(objUpdateInformationEmployeeDTO.getAddress())|| !Objects.isNull(objUpdateInformationEmployeeDTO.getAddress())) {
+					updateDataEmployee.setAddress(objUpdateInformationEmployeeDTO.getAddress());
+				}
+				
+				if(ObjectUtils.isEmpty(objUpdateInformationEmployeeDTO.getMobile())|| !Objects.isNull(objUpdateInformationEmployeeDTO.getMobile())) {
+					updateDataEmployee.setMobile(objUpdateInformationEmployeeDTO.getMobile());
+				}
+				
+				
+				if(ObjectUtils.isEmpty(objUpdateInformationEmployeeDTO.getDateBirth())|| !Objects.isNull(objUpdateInformationEmployeeDTO.getDateBirth())) {
+					updateDataEmployee.setDateBirth(FunctionsUtil.convertStringToDate(objUpdateInformationEmployeeDTO.getDateBirth()));
+				}
+				
+				if(ObjectUtils.isEmpty(objUpdateInformationEmployeeDTO.getVaccinationState())|| !Objects.isNull(objUpdateInformationEmployeeDTO.getVaccinationState())) {
+					if(!ObjectUtils.isEmpty(objUpdateInformationEmployeeDTO.getVaccinationState()) || !Objects.isNull(objUpdateInformationEmployeeDTO.getVaccinationState())) {
+						VaccineState[] vaccineStates = VaccineState.values();
+						if(!Arrays.stream(vaccineStates).anyMatch(tmp -> tmp.getName().equals(objUpdateInformationEmployeeDTO.getVaccinationState()))) {
+							throw new BOException("project.warn.fieldNoExist", new Object[] { objUpdateInformationEmployeeDTO.getVaccinationState() });
+						}
+						updateDataEmployee.setVaccinationState(objUpdateInformationEmployeeDTO.getVaccinationState());
+					}
+				}
+				objDataEmployeeCustomDAOImpl.update(updateDataEmployee);
+				
+				Optional<VaccineData> optVaccineData = objVaccineDataCustomDAOImpl.findById(updateDataEmployee.getIdDataEmployee());
+				VaccineData updateVaccineData = null;
+				if(optVaccineData.isPresent()) {				
+					updateVaccineData = optVaccineData.get();
+					if(ObjectUtils.isEmpty(objUpdateInformationEmployeeDTO.getVaccineDate())|| !Objects.isNull(objUpdateInformationEmployeeDTO.getVaccineDate())) {
+						updateVaccineData.setVaccineDate(FunctionsUtil.convertStringToDate(objUpdateInformationEmployeeDTO.getVaccineDate()));
+					}
+					
+					if(ObjectUtils.isEmpty(objUpdateInformationEmployeeDTO.getNumberDose())|| !Objects.isNull(objUpdateInformationEmployeeDTO.getNumberDose())) {
+						updateVaccineData.setNumberDose(objUpdateInformationEmployeeDTO.getNumberDose());
+					}
+					
+					if(ObjectUtils.isEmpty(objUpdateInformationEmployeeDTO.getVaccineType())|| !Objects.isNull(objUpdateInformationEmployeeDTO.getVaccineType())) {
+						//Get id vaccine by vaccine type
+						Integer intVaccine = objVaccineCustomDAOImpl.getIdVaccineByType(objUpdateInformationEmployeeDTO.getVaccineType());
+						if(ObjectUtils.isEmpty(intVaccine) || Objects.isNull(intVaccine)) {
+							throw new BOException("project.warn.NoexistVaccine", new Object[] { objUpdateInformationEmployeeDTO.getVaccineType() }); 						
+						}
+						Optional<Vaccine> optVaccine = objVaccineCustomDAOImpl.findById(intVaccine);
+						updateVaccineData.setVaccine(optVaccine.get());
+					}
+					
+					objVaccineDataCustomDAOImpl.update(updateVaccineData);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void deleteEmployee(Integer intIdUser) {
 		// TODO Auto-generated method stub
 		
 	}
