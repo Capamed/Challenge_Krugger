@@ -1,6 +1,6 @@
 # Challenge_Krugger
 # Sistema de INVENTARIO DE VACUNACION 
-##El proyecto se realizo con tecnologias de lenguaje de programacion en JAVA y FRAMEWORK SpringBoot
+## El proyecto se realizo con tecnologias de lenguaje de programacion en JAVA y FRAMEWORK SpringBoot
 Dependecias usadas:
 - lombok
 - Spring web
