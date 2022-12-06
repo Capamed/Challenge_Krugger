@@ -6,12 +6,16 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 @Entity
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 @Table(name = "ROLE")
 public class Role implements Serializable {

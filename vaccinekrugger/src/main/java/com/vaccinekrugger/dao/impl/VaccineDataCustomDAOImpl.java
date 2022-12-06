@@ -49,9 +49,9 @@ public class VaccineDataCustomDAOImpl{
 		StringBuilder strJPQL = new StringBuilder();
 		
 		try {
-			strJPQL.append("  SELECT v.idVaccineData ");
+			strJPQL.append("  SELECT vd.idVaccineData ");
 			strJPQL.append("  FROM 		VaccineData vd");
-			strJPQL.append("  WHERE 	vd.idDataEmployee = :pDataEmployee ");
+			strJPQL.append("  WHERE 	vd.dataEmployee.idDataEmployee = :pDataEmployee ");
 			
 			Query query = em.createQuery(strJPQL.toString());
 			

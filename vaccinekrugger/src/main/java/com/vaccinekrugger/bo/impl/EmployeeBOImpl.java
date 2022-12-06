@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +20,9 @@ import org.springframework.web.client.RestClientException;
 
 import com.vaccinekrugger.bo.IUsersBO;
 import com.vaccinekrugger.dao.impl.DataEmployeeCustomDAOImpl;
+import com.vaccinekrugger.dao.impl.RoleCustomDAOImpl;
 import com.vaccinekrugger.dao.impl.UsersCustomDAOImpl;
+import com.vaccinekrugger.dao.impl.UsersRoleCustomDAOImpl;
 import com.vaccinekrugger.dao.impl.VaccineCustomDAOImpl;
 import com.vaccinekrugger.dao.impl.VaccineDataCustomDAOImpl;
 import com.vaccinekrugger.dto.RequestCreateEmployeeDTO;
@@ -29,7 +32,9 @@ import com.vaccinekrugger.enums.VaccineState;
 import com.vaccinekrugger.exceptions.BOException;
 import com.vaccinekrugger.exceptions.CustomExceptionHandler;
 import com.vaccinekrugger.model.DataEmployee;
+import com.vaccinekrugger.model.Role;
 import com.vaccinekrugger.model.Users;
+import com.vaccinekrugger.model.UsersRole;
 import com.vaccinekrugger.model.Vaccine;
 import com.vaccinekrugger.model.VaccineData;
 import com.vaccinekrugger.utils.FunctionsUtil;
@@ -49,6 +54,14 @@ public class EmployeeBOImpl implements IUsersBO {
 	@Autowired
 	private VaccineDataCustomDAOImpl objVaccineDataCustomDAOImpl;
 	
+	@Autowired
+	private RoleCustomDAOImpl objRoleCustomDAOImpl;
+	
+	@Autowired
+	private UsersRoleCustomDAOImpl objUsersRoleCustomDAOImpl;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 	
 	@Override
 	public List<ResponseUsersFiltersDTO> getAllEmployees(String strVaccineState, String strVaccineType, String strCaccineDateStart,String strVaccineDateEnd) throws BOException, ParseException {
@@ -142,14 +155,14 @@ public class EmployeeBOImpl implements IUsersBO {
 		 
 		if(objRequestCreateEmployeeDTO.getState().equalsIgnoreCase("S")) {
 			//Generate username and password
-			UUID uuid = UUID.randomUUID();
-		    String uuidAsString = uuid.toString();
-		    String tmpUuidAsString = uuidAsString.split("")[0];
+			//UUID uuid = UUID.randomUUID();
+		    //String uuidAsString = uuid.toString();
+		    //String tmpUuidAsString = uuidAsString.split("")[0];
 		    
 		    String[] arrFirstName = objRequestCreateEmployeeDTO.getFirstName().split("");
 		    username = arrFirstName[0].toUpperCase() + objRequestCreateEmployeeDTO.getLastName().toUpperCase();
-		    String password = username + tmpUuidAsString;
-		    encodedStringPassword = Base64.getEncoder().encodeToString(password.getBytes());
+		    String password = username + "a";
+		    encodedStringPassword = passwordEncoder.encode(password);
 		}
 		
 		Users objNewUser = new Users();
@@ -161,6 +174,14 @@ public class EmployeeBOImpl implements IUsersBO {
 		objNewUser.setMail(objRequestCreateEmployeeDTO.getMail());
 		objNewUser.setState(objRequestCreateEmployeeDTO.getState());
 		Users userCreated = objUsersCustomDAOImpl.insert(objNewUser);
+		
+		Role objRole = objRoleCustomDAOImpl.getByRoleName(objRequestCreateEmployeeDTO.getRole());
+		
+		UsersRole userUsersRole = new UsersRole();
+		userUsersRole.setUsers(userCreated);
+		userUsersRole.setRole(objRole);
+		objUsersRoleCustomDAOImpl.insert(userUsersRole);
+		
 		
 		//Validate vaccine datebirth
 		if(!ObjectUtils.isEmpty(objRequestCreateEmployeeDTO.getDateBirth()) || !Objects.isNull(objRequestCreateEmployeeDTO.getDateBirth())) {			
@@ -214,6 +235,7 @@ public class EmployeeBOImpl implements IUsersBO {
 	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = { BOException.class, CustomExceptionHandler.class, RestClientException.class})
 	public void updateStateEmployee(String strIdentification, String strState) {
 		List<Users> lstUsers =  objUsersCustomDAOImpl.getUserByIdentification(strIdentification);
 		 String username = null;
@@ -230,9 +252,6 @@ public class EmployeeBOImpl implements IUsersBO {
 		    username = arrFirstName[0].toUpperCase() + lstUsers.get(0).getLastName().toUpperCase();
 		    String password = username + tmpUuidAsString;
 		    encodedStringPassword = Base64.getEncoder().encodeToString(password.getBytes());
-		    
-		}else {
-			
 		}
 		
 	  if(lstUsers.size() > 0 && !ObjectUtils.isEmpty(lstUsers)) {
@@ -261,6 +280,7 @@ public class EmployeeBOImpl implements IUsersBO {
 	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = { BOException.class, CustomExceptionHandler.class, RestClientException.class})
 	public void updateInformationEmployee(Integer intIdUser, RequestUpdateInformationEmployeeDTO objUpdateInformationEmployeeDTO) throws ParseException, BOException {
 		Optional<Users> optUsers = objUsersCustomDAOImpl.findById(intIdUser);
 		Users objUserUpdate = null;
@@ -331,11 +351,13 @@ public class EmployeeBOImpl implements IUsersBO {
 	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = { BOException.class, CustomExceptionHandler.class, RestClientException.class})
 	public void deleteEmployee(Integer intIdUser) {
 		// TODO Auto-generated method stub
 		Optional<Users> optUsers = objUsersCustomDAOImpl.findById(intIdUser);
 		if(optUsers.isPresent()) {
-			Optional<DataEmployee> optDataEmployee = objDataEmployeeCustomDAOImpl.findById(optUsers.get().getIdUsers());
+			Integer intIdDataEmployee = objDataEmployeeCustomDAOImpl.getIdDataEmployeeByUser(optUsers.get().getIdUsers());
+			Optional<DataEmployee> optDataEmployee = objDataEmployeeCustomDAOImpl.findById(intIdDataEmployee);
 			if(optDataEmployee.isPresent()){
 				//Get idDataVaccine by idDataEmployee
 				Integer intIdVaccineData = objVaccineDataCustomDAOImpl.getVaccineDataIdbyIdDataEmployee(optDataEmployee.get().getIdDataEmployee());

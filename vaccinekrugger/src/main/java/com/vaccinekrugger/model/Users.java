@@ -1,6 +1,7 @@
 package com.vaccinekrugger.model;
 import java.io.Serializable;
-import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -49,4 +50,5 @@ public class Users implements Serializable {
     
     @Column(name = "state",length = 1)
     private String state;
+    
 }

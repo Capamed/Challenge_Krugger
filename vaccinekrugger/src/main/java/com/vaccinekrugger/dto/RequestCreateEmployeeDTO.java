@@ -15,6 +15,7 @@ public class RequestCreateEmployeeDTO {
 	private String lastName;
 	private String mail;
 	private String state;
+	private String role;
 	private String address;
 	private String mobile;
 	private String dateBirth;
